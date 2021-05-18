@@ -1,4 +1,3 @@
-
 package com.vellu.journaling101;
 
 import java.sql.PreparedStatement;
@@ -8,100 +7,74 @@ import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import jooq.tables.JournalData;
+import static jooq.tables.JournalData.JOURNAL_DATA;
+import org.jooq.DSLContext;
+import org.jooq.Result;
+import org.jooq.Table;
+import org.jooq.Record;
+import org.jooq.impl.DSL;
+import static org.jooq.impl.DSL.*;
 
 public class DataOperations extends sqlConnection {
-    
-    private DefaultTableModel model;
-    
-    public void addNewNote(String date, String day, String title, String mood, String activity, String health, String note, JTable table) {
-        super.connect();
-        
-        PreparedStatement pst = null;
-        if (day.equals(""))
-            day = "0";
-        int dayInt = Integer.parseInt(day);
-        try {
-            String query = "INSERT INTO  journal_data (date, day, title, mood, activity, health, note) VALUES (?, ?, ?, ?, ?, ?, ?)";
-            pst = con.prepareStatement(query);
-            pst.setString(1, date);
-            pst.setInt(2, dayInt);
-            pst.setString(3, title);
-            pst.setString(4, mood);
-            pst.setString(5, activity);
-            pst.setString(6, health);
-            pst.setString(7, note);
-            pst.executeUpdate();
-            pst.close();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
 
+    private DefaultTableModel model;
+
+    public void addNewNote(String date, String day, String title, String mood, String activity, String health, String note, JTable table) {
+
+        if (day.equals("")) {
+            day = "0";
         }
-        finally {
-            super.disconnect();
-        }
-        
-        Object [] newRowArray = {date, day, title, note};
+        int dayInt = Integer.parseInt(day);
+
+        super.connect();
+        DSLContext context = DSL.using(super.con);
+        context.insertInto(JOURNAL_DATA,
+                JOURNAL_DATA.DATE, JOURNAL_DATA.DAY, JOURNAL_DATA.TITLE, JOURNAL_DATA.MOOD,
+                JOURNAL_DATA.ACTIVITY, JOURNAL_DATA.HEALTH, JOURNAL_DATA.NOTE)
+                .values(date, dayInt, title, mood, activity, health, note)
+                .execute();
+        super.disconnect();
+
+        Object[] newRowArray = {date, day, title, note};
         model = (DefaultTableModel) table.getModel();
         model.addRow(newRowArray);
     }
-    
-    
+
     public void showNotesData(JTable journalDataTb) {
-        
+
         super.connect();
-        ResultSet rs = null;
-        try {
-            String query = "SELECT * FROM journal_data";
-            Statement stat = con.createStatement();
-            rs = stat.executeQuery(query);
-            String [] dataRow = {"date", "day", "title", "note"};
-            
-            while (rs.next()) {
-                dataRow[0] = rs.getString("date");
-                dataRow[1] = String.valueOf(rs.getInt("day"));
-                dataRow[2] = rs.getString("title");
-                dataRow[3] = rs.getString("note");
-                
-                
-                model = (DefaultTableModel) journalDataTb.getModel();
-                model.addRow(dataRow);
-            }
-            
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
+        DSLContext context = DSL.using(super.con);
+        Result<Record> records = context.select().from(JOURNAL_DATA).fetch();
+
+        String[] dataRow = {"date", "day", "title", "note"};
+
+        for (Record rs : records) {
+            dataRow[0] = rs.getValue(JOURNAL_DATA.DATE);
+            dataRow[1] = String.valueOf(rs.getValue(JOURNAL_DATA.DAY));
+            dataRow[2] = rs.getValue(JOURNAL_DATA.TITLE);
+            dataRow[3] = rs.getValue(JOURNAL_DATA.NOTE);
+
+            model = (DefaultTableModel) journalDataTb.getModel();
+            model.addRow(dataRow);
         }
-        finally {
-            try {
-                rs.close();
-                stat.close();
-            } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
-            }
-            
         super.disconnect();
-        }
+
     }
 
     void removeRow(JTable table, int index) {
         super.connect();
-        
+        DSLContext context = DSL.using(super.con);
+
         model = (DefaultTableModel) table.getModel();
-       
-       // first remove data from sql DB
+
+        // First remove data from sql DB
         String myDate = model.getValueAt(index, 0).toString();
-        String query = "DELETE FROM journal_data WHERE date=?";
-        try {
-            PreparedStatement prepstat = con.prepareStatement(query);
-            prepstat.setString(1, myDate);
-            prepstat.executeUpdate();
-            prepstat.close();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
-        }
-        
-       // remove data from JTable
+        context.delete(JOURNAL_DATA).where(JOURNAL_DATA.DATE.eq(myDate)).execute();
+
+        // remove data from JTable
         model.removeRow(index);
-        
+
         super.disconnect();
     }
 
@@ -111,7 +84,7 @@ public class DataOperations extends sqlConnection {
         String itemStr = null;
         model = (DefaultTableModel) table.getModel();
         String myDate = model.getValueAt(index, 0).toString();
-        String query = "SELECT " +columnName+ " FROM journal_data WHERE date='" +myDate+ "';";
+        String query = "SELECT " + columnName + " FROM journal_data WHERE date='" + myDate + "';";
 
         try {
             ResultSet rset = null;
@@ -120,41 +93,37 @@ public class DataOperations extends sqlConnection {
             itemStr = rset.getString(columnName);
             st2.close();
             rset.close();
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, ex.getMessage());
-        }
-        finally {
+        } finally {
             super.disconnect();
         }
         return itemStr;
     }
 
     void updateRow(String dateStr, String dayStr, String titleStr, String moodStr, String activityStr, String healthStr, String noteStr, int index, JTable tb) {
-        super.connect();
-        if (dayStr.equals(""))
+        if (dayStr.equals("")) {
             dayStr = "0";
+        }
         int dayInt = Integer.parseInt(dayStr);
 
         model = (DefaultTableModel) tb.getModel();
         String myDate = model.getValueAt(index, 0).toString();
-        String query = "UPDATE journal_data "+ 
-                "SET date=" +dateStr+ ", day= " +dayInt+ ", title="+titleStr+","+ 
-                "mood=" +moodStr+ ", activity=" +activityStr+ ","+
-                "health=" +healthStr+ ", note=" +noteStr+ " WHERE date="+myDate;
         
-        try {            
-            Statement st3 = con.createStatement();
-            st3.executeUpdate(query);
-            st3.close();
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex.getMessage());
-        }
-        finally {
-            super.disconnect();
-        }
+        super.connect();
+        DSLContext context = DSL.using(super.con);
+        
+        context.update(JOURNAL_DATA)
+                .set(JOURNAL_DATA.DAY, dayInt)
+                .set(JOURNAL_DATA.TITLE, titleStr)
+                .set(JOURNAL_DATA.MOOD, moodStr)
+                .set(JOURNAL_DATA.ACTIVITY, activityStr)
+                .set(JOURNAL_DATA.ACTIVITY, healthStr)
+                .set(JOURNAL_DATA.NOTE, noteStr)
+                .where(JOURNAL_DATA.DATE.eq(myDate))
+                .execute();
+        
+        super.disconnect();
     }
 
-   
-    
 }

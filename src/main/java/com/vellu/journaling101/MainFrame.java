@@ -9,10 +9,7 @@ import javax.swing.table.DefaultTableModel;
 public class MainFrame extends javax.swing.JFrame {
     private DataOperations db;
     private DefaultTableModel model = null;
-    
-    /**
-     * Creates new form MainFrame
-     */
+   
     public MainFrame() {
         initDate();
         initComponents();
@@ -373,7 +370,6 @@ public class MainFrame extends javax.swing.JFrame {
         } else {
 // Check if there is already same date in JTable
             int row = getRowByValue(model, dateStr);
-            System.out.println(row);
             if(row >= 0) {
                 
              int input = JOptionPane.showConfirmDialog(editNotePane, "Overwrite note from " + dateStr +"?",JOptionPane.OPTIONS_PROPERTY, JOptionPane.OK_CANCEL_OPTION);
