@@ -1,20 +1,16 @@
 package com.vellu.journaling101;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
-import jooq.tables.JournalData;
 import static jooq.tables.JournalData.JOURNAL_DATA;
 import org.jooq.DSLContext;
 import org.jooq.Result;
-import org.jooq.Table;
 import org.jooq.Record;
 import org.jooq.impl.DSL;
-import static org.jooq.impl.DSL.*;
 
 public class DataOperations extends sqlConnection {
 
@@ -118,7 +114,7 @@ public class DataOperations extends sqlConnection {
                 .set(JOURNAL_DATA.TITLE, titleStr)
                 .set(JOURNAL_DATA.MOOD, moodStr)
                 .set(JOURNAL_DATA.ACTIVITY, activityStr)
-                .set(JOURNAL_DATA.ACTIVITY, healthStr)
+                .set(JOURNAL_DATA.HEALTH, healthStr)
                 .set(JOURNAL_DATA.NOTE, noteStr)
                 .where(JOURNAL_DATA.DATE.eq(myDate))
                 .execute();

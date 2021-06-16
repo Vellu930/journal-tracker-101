@@ -8,7 +8,6 @@ import javax.swing.table.DefaultTableModel;
 
 public class MainFrame extends javax.swing.JFrame {
     private DataOperations db;
-    private DefaultTableModel model = null;
    
     public MainFrame() {
         initDate();
@@ -51,12 +50,13 @@ public class MainFrame extends javax.swing.JFrame {
         sidebarLeft = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(800, 600));
+        setPreferredSize(new java.awt.Dimension(850, 700));
 
         sidebarRight.setBackground(new java.awt.Color(153, 102, 255));
         sidebarRight.setPreferredSize(new java.awt.Dimension(400, 460));
         sidebarRight.setLayout(new java.awt.BorderLayout());
 
+        journalDataTb.setForeground(new java.awt.Color(51, 51, 51));
         journalDataTb.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -80,17 +80,18 @@ public class MainFrame extends javax.swing.JFrame {
                 return canEdit [columnIndex];
             }
         });
+        journalDataTb.setSelectionBackground(new java.awt.Color(51, 0, 51));
         jScrollPane2.setViewportView(journalDataTb);
         if (journalDataTb.getColumnModel().getColumnCount() > 0) {
-            journalDataTb.getColumnModel().getColumn(0).setPreferredWidth(50);
-            journalDataTb.getColumnModel().getColumn(1).setPreferredWidth(20);
+            journalDataTb.getColumnModel().getColumn(0).setPreferredWidth(45);
+            journalDataTb.getColumnModel().getColumn(1).setPreferredWidth(16);
         }
 
         sidebarRight.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
         getContentPane().add(sidebarRight, java.awt.BorderLayout.LINE_END);
 
-        header.setBackground(new java.awt.Color(51, 0, 102));
+        header.setBackground(new java.awt.Color(204, 0, 204));
         header.setPreferredSize(new java.awt.Dimension(732, 40));
 
         menuIconLabel.setPreferredSize(new java.awt.Dimension(40, 40));
@@ -100,8 +101,8 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        headerTitleLabel.setFont(new java.awt.Font("sansserif", 3, 18)); // NOI18N
-        headerTitleLabel.setForeground(new java.awt.Color(204, 204, 255));
+        headerTitleLabel.setFont(new java.awt.Font("Dialog", 3, 18)); // NOI18N
+        headerTitleLabel.setForeground(new java.awt.Color(255, 255, 102));
         headerTitleLabel.setText("Write your journal");
 
         deleteButton.setText("Delete");
@@ -111,7 +112,7 @@ public class MainFrame extends javax.swing.JFrame {
             }
         });
 
-        editButton.setText("Show / Edit");
+        editButton.setText("Edit");
         editButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 editButtonActionPerformed(evt);
@@ -125,7 +126,7 @@ public class MainFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, headerLayout.createSequentialGroup()
                 .addGap(14, 14, 14)
                 .addComponent(headerTitleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 363, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 137, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 165, Short.MAX_VALUE)
                 .addComponent(editButton)
                 .addGap(37, 37, 37)
                 .addComponent(deleteButton)
@@ -150,7 +151,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         getContentPane().add(header, java.awt.BorderLayout.PAGE_START);
 
-        editNotePane.setBackground(new java.awt.Color(51, 51, 51));
+        editNotePane.setBackground(new java.awt.Color(102, 0, 102));
         editNotePane.setPreferredSize(new java.awt.Dimension(360, 460));
 
         dateLabel.setForeground(new java.awt.Color(153, 153, 153));
@@ -324,7 +325,7 @@ public class MainFrame extends javax.swing.JFrame {
 
         getContentPane().add(editNotePane, java.awt.BorderLayout.CENTER);
 
-        sidebarLeft.setBackground(new java.awt.Color(153, 102, 255));
+        sidebarLeft.setBackground(new java.awt.Color(204, 0, 204));
         sidebarLeft.setPreferredSize(new java.awt.Dimension(40, 460));
         sidebarLeft.setLayout(new java.awt.GridBagLayout());
         getContentPane().add(sidebarLeft, java.awt.BorderLayout.LINE_START);
@@ -352,7 +353,8 @@ public class MainFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_clearButtonActionPerformed
 
     private void saveNoteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveNoteButtonActionPerformed
-        model = (DefaultTableModel) journalDataTb.getModel();
+        
+        DefaultTableModel model = (DefaultTableModel) journalDataTb.getModel();
         DataOperations addData = new DataOperations();
         int index = journalDataTb.getSelectedRow();
         String dateStr = dateTxt.getText();
@@ -365,14 +367,20 @@ public class MainFrame extends javax.swing.JFrame {
         
 // data and title are compulsory items
         if (titleStr.equals("") || dateStr.equals("")) {
-            JOptionPane.showMessageDialog(editNotePane,"Please enter title and date correctly.","Title or date missing",JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(editNotePane.getParent(),
+                    "Please enter title and date correctly.",
+                    "Title or date missing",
+                    JOptionPane.WARNING_MESSAGE);
             titleTxt.grabFocus();
         } else {
 // Check if there is already same date in JTable
             int row = getRowByValue(model, dateStr);
             if(row >= 0) {
-                
-             int input = JOptionPane.showConfirmDialog(editNotePane, "Overwrite note from " + dateStr +"?",JOptionPane.OPTIONS_PROPERTY, JOptionPane.OK_CANCEL_OPTION);
+                int input = JOptionPane.
+                        showConfirmDialog(editNotePane.getParent(), 
+                                "Overwrite note from " + dateStr +"?",
+                                JOptionPane.OPTIONS_PROPERTY, 
+                                JOptionPane.OK_CANCEL_OPTION);
                         if (input == 0) {
                             index = row;
                             addData = new DataOperations();
@@ -386,10 +394,10 @@ public class MainFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_saveNoteButtonActionPerformed
 
-    int getRowByValue(DefaultTableModel mod, Object value) {
+    int getRowByValue(DefaultTableModel m, Object value) {
         int row = -4;
-    for (int i = mod.getRowCount() - 1; i >= 0; --i) {
-            if (mod.getValueAt(i, 0).equals(value)) {
+    for (int i = m.getRowCount() - 1; i >= 0; --i) {
+            if (m.getValueAt(i, 0).equals(value)) {
                 row = i;
             }
         }
@@ -482,7 +490,6 @@ public class MainFrame extends javax.swing.JFrame {
         return dateNow;
     }
     
-
     private void editNotes() {
         int index = journalDataTb.getSelectedRow();
         dateTxt.setText(db.getItem(index, "date", journalDataTb));
@@ -491,8 +498,7 @@ public class MainFrame extends javax.swing.JFrame {
         moodTxt.setText(db.getItem(index, "mood", journalDataTb));
         healthTxt.setText(db.getItem(index, "health", journalDataTb));
         activityTxt.setText(db.getItem(index, "activity", journalDataTb));
-        noteTxt.setText(db.getItem(index, "note", journalDataTb)); 
-        
+        noteTxt.setText(db.getItem(index, "note", journalDataTb));
     }
 
     private void clearForm() {
@@ -503,13 +509,13 @@ public class MainFrame extends javax.swing.JFrame {
         healthTxt.setText("");
         activityTxt.setText("");
         noteTxt.setText("");    }
+
+    private void refreshTable() {
+        clearTable((DefaultTableModel)journalDataTb.getModel());
+        db = new DataOperations();
+        db.showNotesData(journalDataTb);    }
     
     private void clearTable(DefaultTableModel model) {
         model.setRowCount(0);
     }
-
-    private void refreshTable() {
-        clearTable(model);
-        db = new DataOperations();
-        db.showNotesData(journalDataTb);    }
 }
