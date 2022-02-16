@@ -11,3 +11,7 @@ Write, edit, delete notes every day.
 * Maven
 * NetBeans
 
+### Screenshot
+
+![main page view][https://github.com/Vellu930/journal-tracker-101/blob/main/shot-2022-02-16T120405.png?raw=true]
+
